@@ -7,22 +7,23 @@ services:
     restart: always
     environment:
       - MYSQL_ROOT_PASSWORD=80jpnH4.r5g
-    network_mode: "host"
-    expose:
-      - 3306
+    network_mode: "bridge"
+    ports:
+      - "13307:13307"
     volumes:
       - ./mysql/data:/var/lib/mysql
       - ./mysql/conf.d:/etc/mysql/conf.d
       - ./mysql/initdb:/docker-entrypoint-initdb.d
+    command: ["/bin/sh", "-c", "chmod 644 /etc/mysql/conf.d/docker.cnf && exec docker-entrypoint.sh mysqld"]
 
   mall4cloud-minio:
-    image: minio/minio:RELEASE.2024-04-18T19-09-19Z
+    image: minio/minio:RELEASE.2021-06-17T00-10-46Z
     container_name: mall4cloud-minio
     restart: always
     command: server /data
-    network_mode: "host"
-    expose:
-      - 9000
+    network_mode: "bridge"
+    ports:
+      - "9000:9000"
     volumes:
       - ./minio/data:/data
     environment:
@@ -42,21 +43,21 @@ services:
   mall4cloud-nacos:
     image: nacos/nacos-server:v2.3.2
     container_name: mall4cloud-nacos
-    restart: always
     depends_on:
       - mall4cloud-mysql
-    network_mode: "host"
-    expose:
-      - 8848
-      - 9848
-      - 9849
+    network_mode: "bridge"
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+      - "9849:9849"
     environment:
       - JVM_XMS=256m
       - JVM_XMX=256m
       - MODE=standalone
       - PREFER_HOST_MODE=hostname
       - SPRING_DATASOURCE_PLATFORM=mysql
-      - MYSQL_SERVICE_HOST=192.168.1.46
+      - MYSQL_SERVICE_HOST=172.30.191.184
+      - MYSQL_SERVICE_PORT=13307
       - MYSQL_SERVICE_DB_NAME=mall4cloud_nacos
       - MYSQL_SERVICE_USER=root
       - MYSQL_SERVICE_PASSWORD=80jpnH4.r5g
@@ -71,14 +72,14 @@ services:
     image: seataio/seata-server:2.0.0
     container_name: mall4cloud-seata
     restart: always
-    network_mode: "host"
-    expose:
-      - 8091
-      - 7091
+    network_mode: "bridge"
+    ports:
+      - "8091:8091"
+      - "7091:7091"
     environment:
       - TZ
       - STORE_MODE=db
-      - SEATA_IP=192.168.1.46
+      - SEATA_IP=172.30.191.184
       - SEATA_PORT=8091
     volumes:
       - ./seata/application.yml:/seata-server/resources/application.yml
@@ -87,10 +88,10 @@ services:
     image: elasticsearch:7.17.21
     container_name: mall4cloud-elasticsearch
     restart: always
-    network_mode: "host"
-    expose:
-      - 9200
-      - 9300
+    network_mode: "bridge"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
     environment:
       - discovery.type=single-node
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
@@ -106,9 +107,9 @@ services:
     image: canal/canal-server:v1.1.7
     container_name: mall4cloud-canal
     restart: always
-    network_mode: "host"
-    expose:
-      - 11111
+    network_mode: "bridge"
+    ports:
+      - "11111:11111"
     volumes:
       - ./canal/conf/example:/home/admin/canal-server/conf/example
       - ./canal/conf/canal.properties:/home/admin/canal-server/conf/canal.properties
@@ -119,9 +120,9 @@ services:
     image: apache/rocketmq:5.2.0
     container_name: mall4cloud-rocketmq-namesrv
     restart: always
-    network_mode: "host"
-    expose:
-      - 9876
+    network_mode: "bridge"
+    ports:
+      - "9876:9876"
     volumes:
       - ./rocketmq/namesrv/logs:/home/rocketmq/logs
       - ./rocketmq/namesrv/store:/home/rocketmq/store
@@ -133,17 +134,17 @@ services:
     image: apache/rocketmq:5.2.0
     container_name: mall4cloud-rocketmq-broker
     restart: always
-    network_mode: "host"
-    expose:
-      - 10909
-      - 10911
+    network_mode: "bridge"
+    ports:
+      - "10909:10909"
+      - "10911:10911"
     volumes:
       - ./rocketmq/broker/logs:/home/rocketmq/logs
       - ./rocketmq/broker/store:/home/rocketmq/store
       - ./rocketmq/broker/conf/broker.conf:/etc/rocketmq/broker.conf
     environment:
       JAVA_OPT_EXT: "-Duser.home=/home/rocketmq -Xms512M -Xmx512M -Xmn128M -XX:-AssumeMP"
-    command: ["sh","mqbroker","-c","/etc/rocketmq/broker.conf","-n","192.168.1.46:9876","autoCreateTopicEnable=true"]
+    command: ["sh","mqbroker","-c","/etc/rocketmq/broker.conf","-n","172.30.191.184:9876","autoCreateTopicEnable=true"]
     depends_on:
       - mall4cloud-rocketmq-namesrv
 
@@ -152,9 +153,10 @@ services:
     image: fsckzy01/rocketmq-dashboard:1.0.1
     container_name: mall4cloud-rocketmq-dashboard
     restart: always
+    network_mode: "bridge"
     ports:
-      - 8180:8080
+      - "8180:8080"
     environment:
-      JAVA_OPTS: "-Drocketmq.namesrv.addr=192.168.1.46:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false"
+      JAVA_OPTS: "-Drocketmq.namesrv.addr=172.30.191.184:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false"
     depends_on:
       - mall4cloud-rocketmq-namesrv

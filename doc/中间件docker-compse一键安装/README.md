@@ -28,10 +28,10 @@ docker compose up -d --build
 请自行192.168.1.46替换为服务器ip
 
  - mysql: 使用数据库连接工具进行连接， 端口3306 账号及密码 root/80jpnH4.r5g
- - minio: http://192.168.1.46:9000 账号及密码 admin/80jpnH4.r5g
+ - minio: http://172.30.191.184:9000 账号及密码 admin/80jpnH4.r5g
  - redis: 端口6379，密码为80jpnH4.r5g
- - nacos: http://192.168.1.46:8848/nacos 账号及密码 nacos/nacos 请自行修改密码，确保不被攻击
- - rocketmq-dashboard：http://192.168.1.46:8180 未配置密码，请自行配置
+ - nacos: http://172.30.191.184:8848/nacos 账号及密码 nacos/nacos 请自行修改密码，确保不被攻击
+ - rocketmq-dashboard：http://172.30.191.184:8180 未配置密码，请自行配置
 
 
 6.访问minio管理页面，创建存储区域(Create Bucker) 名为`mall4cloud`
